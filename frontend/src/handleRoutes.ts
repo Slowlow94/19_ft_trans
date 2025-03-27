@@ -1,34 +1,58 @@
 import { setupRegisterListeners, setupLoginListeners } from "./handleForm.js";
+// import { updateUIBasedOnAuth } from "./auth.js";
 
-type Route = "/login" | "/register";
-// "/" | "/home";
+export const BASE_PATH = window.location.origin + window.location.pathname.split("/").slice(0, -1).join("/");
+const currentPath = window.location.pathname as Route;
+type Route = "/login" | "/register" | "/" | "/game";
 
 const routes: Record<Route, string> = {
-//   "/": "views/index.html",
-//   "/home": "views/home.html",
-  "/login": "views/logInForm.html",
-  "/register": "views/signInForm.html",
+  "/": `${BASE_PATH}/views/home.html`,
+  "/register": `${BASE_PATH}/views/signInForm.html`,
+  "/login": `${BASE_PATH}/views/logInForm.html`,
+  "/game": `${BASE_PATH}/views/game.html`,
 };
 
-async function loadView(path: Route) {
-  const container = document.getElementById("FormContainer")!;
-  console.log("TEST1");
+export async function loadView(path: Route) {
+  const container = document.getElementById("FormContainer");
+  const pongCanva = document.getElementById("pongGame");
+
+  if (container) container.innerHTML = "";
+  if (pongCanva) pongCanva.classList.add("hidden");
+
   try {
     const response = await fetch(routes[path]);
     const html = await response.text();
-    container.innerHTML = html;
 
-    if (path === "/login") setupLoginListeners();
-    if (path === "/register") setupRegisterListeners();
-    // home et game
+    if (path === "/login" || path === "/register") {
+      container!.innerHTML = html;
+      if (path === "/login") setupLoginListeners();
+      if (path === "/register") setupRegisterListeners();
+    }
+    if (path === "/") {
+      container!.innerHTML = html;
+      //setupHome();
+    }
+    if (path === "/game") {
+      const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true"
+      if (!isLoggedIn) {
+        alert("You need to be logged to play");
+        history.replaceState({}, "", "/");
+        loadView("/");
+        // updateUIBasedOnAuth();
+        return;
+      }
+      pongCanva!.classList.remove("hidden");
+      //setupGame();
+    }
   } catch (err) {
-    container.innerHTML = "<p>View not found</p>";
+    container!.innerHTML = "<p>View not found</p>";
   }
 }
 
 function navigateTo(path: Route) {
   history.pushState({}, "", path);
   loadView(path);
+  // updateUIBasedOnAuth();
 }
 
 function setupNavLinks() {
@@ -43,14 +67,19 @@ function setupNavLinks() {
 
 // 🔄 Gérer le bouton "back" du navigateur
 window.addEventListener("popstate", () => {
-    console.log("TEST");
   const path = window.location.pathname as Route;
-  console.log(path);
   loadView(path);
+  // updateUIBasedOnAuth();
 });
 
 // 🔥 Initialisation
 document.addEventListener("DOMContentLoaded", () => {
   setupNavLinks();
-  loadView(window.location.pathname as Route);
+  // updateUIBasedOnAuth();
+  if(routes[currentPath])
+    loadView(currentPath);
+  else {
+    history.replaceState({}, "", "/");
+    loadView("/");
+  }
 });

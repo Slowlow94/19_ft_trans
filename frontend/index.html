@@ -20,6 +20,7 @@
           <div class="absolute top-7 right-6 flex flex-col gap-2 items-center">
             <div>
               <button
+                type="button"
                 data-route="/register"
                 id="signInBtn"
                 class="px-3 py-1 text-blue-600 bg-amber-200 rounded-2xl"
@@ -29,6 +30,7 @@
             </div>
             <div>
               <button
+                type="button"
                 data-route="/login"
                 id="logInBtn"
                 class="px-3 py-1 text-blue-600 bg-amber-200 rounded-2xl"
@@ -40,12 +42,19 @@
         </div>
       </header>
       <div class="p-10 text-center mt-24">
-        <button class="font-bold text-zinc-200">PING-PONG GAME</button>
+        <button
+          type="button"
+          data-route="/game"
+          id="gameBtn"
+          class="font-bold text-zinc-200"
+        >
+          PING-PONG GAME
+        </button>
       </div>
-
       <footer></footer>
+      <div id="userWidgetContainer" class="absolute top-7 right-6"></div>
+      <div id="FormContainer"></div>
+      <canva id="pongGame"></canva>
     </main>
-    <div id="FormContainer"></div>
-    <canva id="pongGame"></canva>
   </body>
 </html>
