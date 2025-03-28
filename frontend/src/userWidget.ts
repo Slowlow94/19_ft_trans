@@ -1,4 +1,5 @@
 import {logout} from "./auth.js"
+import { loadView } from "./handleRoutes.js";
 
 export async function renderUserWidget(user: {name: string, avatar: string}) {
     const widgetContainer = document.getElementById("userWidgetContainer");
@@ -34,10 +35,14 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
             </svg>
           </div>
           <div>
-            <a href="#" class="font-semibold text-gray-900">
-              Parameters
-              <span class="absolute inset-0"></span>
-            </a>
+            <button
+            type="button"
+            data-rpute="/settings"
+            id="settingsBtn"
+            class="font-semibold text-gray-900"
+            >
+          Settings
+          </button>
           </div>
         </div>
         <div class="group relative flex items-center gap-x-1 rounded-lg p-2 hover:bg-gray-50">
@@ -47,10 +52,13 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
             </svg>
           </div>
           <div>
-            <a href="#" class="font-semibold text-gray-900">
-              Scores
-              <span class="absolute inset-0"></span>
-            </a>
+          <button
+            type="button"
+            id="scoresBtn"
+            class="font-semibold text-gray-900"
+            >
+          Scores
+          </button>
           </div>
         </div>
         <div class="group relative flex items-center gap-x-1 rounded-lg p-2 hover:bg-gray-50">
@@ -60,10 +68,13 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
             </svg>
           </div>
           <div>
-            <a href="#" class="font-semibold text-gray-900">
-              Logout
-              <span class="absolute inset-0"></span>
-            </a>
+            <button
+            type="button"
+            id="logoutBtn"
+            class="font-semibold text-gray-900"
+            >
+            Logout
+            </button>
           </div>
         </div>
       </div>
@@ -74,12 +85,12 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
     const dropDownBtn = document.querySelector("#userWidget button");
     const dropDownMenu = document.querySelector("#userWidget > div.absolute");
     if (dropDownBtn && dropDownMenu) {
-        let isOpen = false;
+      let isOpen = false;
         const openMenu = () => {
             dropDownMenu.classList.remove("opacity-0", "translate-y-1");
             dropDownMenu.classList.add("opacity-100", "translate-y-0", "block");
             dropDownMenu.classList.add("transition", "ease-out", "duration-200");
-		    isOpen = true;
+		        isOpen = true;
         }
         const closeMenu = () => {
             dropDownMenu.classList.remove("opacity-100", "translate-y-0", "block");
@@ -100,15 +111,51 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
         })
     }
 
-    document.getElementById("logoutBtn")?.addEventListener("click", logout);
-    // document.getElementById("logOutBtn")?.addEventListener("click", () => {
-    //     logout();
-    // });
+    document.getElementById("logoutBtn")?.addEventListener("click", () => {
+        logout();
+    });
 
-    document.getElementById("viewSettings")?.addEventListener("click", () => {
-        alert("redirection to parameters");
+    document.getElementById("settingsBtn")?.addEventListener("click", () => {
+      // closeMenu(); create function outside the function
+      history.pushState({}, "", "/settings");
+      loadView("/settings");
     })
-    document.getElementById("viewScores")?.addEventListener("click", () => {
+
+    document.getElementById("scoresBtn")?.addEventListener("click", () => {
         alert("redirection to scores");
     })
+}
+
+export async function setupSettingsForm() {
+  const settingsUserWidget = document.getElementById("settingsContainer");
+  if (!settingsUserWidget) return;
+
+  settingsUserWidget.innerHTML = `
+  <section class="mt-10 max-w-md mx-auto bg-white bg-opacity-90 rounded-2xl shadow-lg p-6 text-sm text-gray-800">
+    <h2 class="text-xl font-bold mb-4 text-center text-gray-900">Account settings</h2>
+  
+    <form id="settingsForm" class="space-y-4">
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+        <input type="text" id="username" name="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="Salowie" />
+      </div>
+  
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+        <input type="email" id="email" name="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="email@exemple.com" />
+      </div>
+  
+      <div>
+        <label for="avatar" class="block text-sm font-medium text-gray-700">Photo de profil (URL)</label>
+        <input type="text" id="avatar" name="avatar" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="https://..." />
+      </div>
+  
+      <div class="pt-4">
+        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-xl hover:bg-indigo-700 transition">
+          Sauvegarder
+        </button>
+      </div>
+    </form>
+  </section>
+`
 }
