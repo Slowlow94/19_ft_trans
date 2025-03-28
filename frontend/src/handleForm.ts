@@ -23,7 +23,7 @@ export function removeErrorStyleLogIn(input: HTMLInputElement, style: string): v
 export function setupLoginListeners(): void{
     const loginForm = document.getElementById("logInForm") as HTMLFormElement;
     const loginModal = document.getElementById("loginModal") as HTMLDivElement;
-
+    
     const emailInput = document.getElementById("lastname") as HTMLInputElement;
     const passwordInput = document.getElementById("password") as HTMLInputElement;
     
@@ -44,11 +44,11 @@ export function setupLoginListeners(): void{
 
         if (email === fakeUser.email && password === fakeUser.password) {
             sessionStorage.setItem("isLoggedIn", "true");
-            updateUIBasedOnAuth();
             alert("Connected!");
             history.replaceState({}, "", "/");
             loadView("/");
             renderUserWidget({name: "Salowie", avatar: `${BASE_PATH}/img/avatar.jpg`});
+            updateUIBasedOnAuth();
         } else {
             if (email !== fakeUser.email)
                 emailInput.classList.add("border-red-500");

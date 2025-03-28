@@ -1,5 +1,5 @@
 import { setupRegisterListeners, setupLoginListeners } from "./handleForm.js";
-// import { updateUIBasedOnAuth } from "./auth.js";
+import { updateUIBasedOnAuth, isLoggedIn } from "./auth.js";
 
 export const BASE_PATH = window.location.origin + window.location.pathname.split("/").slice(0, -1).join("/");
 const currentPath = window.location.pathname as Route;
@@ -27,22 +27,22 @@ export async function loadView(path: Route) {
       container!.innerHTML = html;
       if (path === "/login") setupLoginListeners();
       if (path === "/register") setupRegisterListeners();
+      // updateUIBasedOnAuth();
     }
     if (path === "/") {
       container!.innerHTML = html;
+      // updateUIBasedOnAuth();
       //setupHome();
     }
     if (path === "/game") {
-      const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true"
-      if (!isLoggedIn) {
+      if (!isLoggedIn()) {
         alert("You need to be logged to play");
         history.replaceState({}, "", "/");
         loadView("/");
-        // updateUIBasedOnAuth();
         return;
       }
       pongCanva!.classList.remove("hidden");
-      //setupGame();
+      // setupGame();
     }
   } catch (err) {
     container!.innerHTML = "<p>View not found</p>";
@@ -52,7 +52,7 @@ export async function loadView(path: Route) {
 function navigateTo(path: Route) {
   history.pushState({}, "", path);
   loadView(path);
-  // updateUIBasedOnAuth();
+  updateUIBasedOnAuth();
 }
 
 function setupNavLinks() {
@@ -75,7 +75,6 @@ window.addEventListener("popstate", () => {
 // 🔥 Initialisation
 document.addEventListener("DOMContentLoaded", () => {
   setupNavLinks();
-  // updateUIBasedOnAuth();
   if(routes[currentPath])
     loadView(currentPath);
   else {
