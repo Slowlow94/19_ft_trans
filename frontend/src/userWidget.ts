@@ -1,15 +1,19 @@
 import {logout} from "./auth.js"
 import { loadView } from "./handleRoutes.js";
+import { updateUIBasedOnAuth } from "./auth.js";
 
-export async function renderUserWidget(user: {name: string, avatar: string}) {
+let isOpen = false;
+
+export async function renderUserWidget(user: {name: string, avatar: string, email: string}) {
     const widgetContainer = document.getElementById("userWidgetContainer");
     if (!widgetContainer) return;
 
+    const userName = user.name ? user.name : user.email;
     widgetContainer.innerHTML = `
     <div id="userWidget" class="relative group cursor-pointer">
   <button type="button" class="inline-flex items-center gap-x-1 text-sm/5 font-semibold text-gray-900" aria-expanded="false">
   <img src="${user.avatar}" alt="avatar" class="w-6 h-6 rounded-full object-cover"/>
-    <span>${user.name}</span>
+    <span>${userName}</span>
     <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
       <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
     </svg>
@@ -85,18 +89,6 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
     const dropDownBtn = document.querySelector("#userWidget button");
     const dropDownMenu = document.querySelector("#userWidget > div.absolute");
     if (dropDownBtn && dropDownMenu) {
-      let isOpen = false;
-        const openMenu = () => {
-            dropDownMenu.classList.remove("opacity-0", "translate-y-1");
-            dropDownMenu.classList.add("opacity-100", "translate-y-0", "block");
-            dropDownMenu.classList.add("transition", "ease-out", "duration-200");
-		        isOpen = true;
-        }
-        const closeMenu = () => {
-            dropDownMenu.classList.remove("opacity-100", "translate-y-0", "block");
-            dropDownMenu.classList.add("opacity-0", "translate-y-1");
-            isOpen = false;
-        }
         dropDownBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             if (isOpen)
@@ -116,46 +108,129 @@ export async function renderUserWidget(user: {name: string, avatar: string}) {
     });
 
     document.getElementById("settingsBtn")?.addEventListener("click", () => {
-      // closeMenu(); create function outside the function
+      closeMenu();
       history.pushState({}, "", "/settings");
       loadView("/settings");
-    })
+    });
 
     document.getElementById("scoresBtn")?.addEventListener("click", () => {
         alert("redirection to scores");
-    })
+    });
+}
+
+function closeMenu() {
+  const dropDownBtn = document.querySelector("#userWidget button");
+  const dropDownMenu = document.querySelector("#userWidget > div.absolute");
+  if (dropDownBtn && dropDownMenu) {
+    dropDownMenu.classList.remove("opacity-100", "translate-y-0", "block");
+    dropDownMenu.classList.add("opacity-0", "translate-y-1");
+    isOpen = false;
+  }
+}
+
+function openMenu() {
+  const dropDownBtn = document.querySelector("#userWidget button");
+  const dropDownMenu = document.querySelector("#userWidget > div.absolute");
+  if (dropDownBtn && dropDownMenu) {
+      dropDownMenu.classList.remove("opacity-0", "translate-y-1");
+      dropDownMenu.classList.add("opacity-100", "translate-y-0", "block");
+      dropDownMenu.classList.add("transition", "ease-out", "duration-200");
+      isOpen = true;
+  }
 }
 
 export async function setupSettingsForm() {
   const settingsUserWidget = document.getElementById("settingsContainer");
   if (!settingsUserWidget) return;
+  const userJson = sessionStorage.getItem("user1");
+  if (!userJson) return;
+  const user = JSON.parse(userJson);
+  const userName = user.userName ? user.userName : user.email;
 
   settingsUserWidget.innerHTML = `
-  <section class="mt-10 max-w-md mx-auto bg-white bg-opacity-90 rounded-2xl shadow-lg p-6 text-sm text-gray-800">
+  <div id="loginModalSettings" class="fixed inset-0 bg-opacity-40 flex justify-center items-start pt-50 z-50">
+    <section class="mt-10 max-w-md mx-auto bg-white bg-opacity-90 rounded-2xl shadow-lg p-6 text-sm text-gray-800">
     <h2 class="text-xl font-bold mb-4 text-center text-gray-900">Account settings</h2>
-  
-    <form id="settingsForm" class="space-y-4">
-      <div>
-        <label for="username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
-        <input type="text" id="username" name="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="Salowie" />
-      </div>
-  
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
-        <input type="email" id="email" name="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="email@exemple.com" />
-      </div>
-  
-      <div>
-        <label for="avatar" class="block text-sm font-medium text-gray-700">Photo de profil (URL)</label>
-        <input type="text" id="avatar" name="avatar" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="https://..." />
-      </div>
-  
-      <div class="pt-4">
-        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-xl hover:bg-indigo-700 transition">
-          Sauvegarder
-        </button>
-      </div>
-    </form>
-  </section>
-`
+    <div class="flex justify-center items-center gap-2 mb-5">
+      <img src="${user.avatar}" alt="avatarUpload" class="w-6 h-6 rounded-full object-cover"/>
+      <span class="text-sm font-bold text-center text-gray-900">${userName}</span>
+    </div>
+    
+      <form id="settingsForm" class="space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+          <input type="text" id="username" name="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="" />
+        </div>
+    
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Confirm your email</label>
+          <input type="email" id="email" name="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm" placeholder="" />
+        </div>
+    
+        <div>
+          <label for="avatar" class="block text-sm font-medium text-gray-700">Avatar</label>
+          <input type="file" id="avatar" accept="image/*" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="" />
+        </div>
+    
+        <div class="pt-4">
+          <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-xl hover:bg-indigo-700 transition">
+            Save
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+  `
+
+  const settingsForm = document.getElementById("settingsForm");
+  const emailInput = document.getElementById("email") as HTMLInputElement;
+  const usernameInput = document.getElementById("username") as HTMLInputElement;
+  const avatarInput = document.getElementById("avatar") as HTMLInputElement;
+
+  settingsForm!.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const enteredEmail = emailInput.value.trim();
+    const storageEmail = user.email;
+
+    if (enteredEmail.toLowerCase() !== storageEmail.toLowerCase()) {
+      emailInput.classList.add("border", "border-red-500", "focus:border-red-500");
+      emailInput.value = "";
+      emailInput.placeholder = "Email incorrect";
+      emailInput.focus();
+      return;
+    }
+
+    user.userName = usernameInput.value.trim();
+    if (avatarInput.files && avatarInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        user.avatar = reader.result as string;
+        sessionStorage.setItem("user1", JSON.stringify(user));
+        finishSettingsUpdate();
+      };
+      reader.readAsDataURL(avatarInput.files[0]);
+    } else {
+      sessionStorage.setItem("user1", JSON.stringify(user));
+      finishSettingsUpdate();
+    }
+  });
+
+  function finishSettingsUpdate() {
+    if (settingsUserWidget)
+        settingsUserWidget.innerHTML = "";
+    history.replaceState({}, "", "/");
+    loadView("/");
+    renderUserWidget({
+      name: user.userName,
+      avatar: user.avatar,
+      email: user.email,
+    });
+    updateUIBasedOnAuth();
+  }
+
+  emailInput.addEventListener("input", () => {
+    emailInput.classList.remove("border-red-500", "focus:border-red-500");
+    emailInput.placeholder = "";
+  });
 }

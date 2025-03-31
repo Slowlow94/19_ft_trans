@@ -16,23 +16,23 @@ const routes: Record<Route, string> = {
 
 export async function loadView(path: Route) {
   const container = document.getElementById("FormContainer");
+  const settings = document.getElementById("settingsContainer");
   const pongCanva = document.getElementById("pongGame");
-
+  
   if (container) container.innerHTML = "";
   if (pongCanva) pongCanva.classList.add("hidden");
-
+  
   try {
     const response = await fetch(routes[path]);
     const html = await response.text();
-
+    
     if (path === "/login" || path === "/register") {
       container!.innerHTML = html;
       if (path === "/login") setupLoginListeners();
       if (path === "/register") setupRegisterListeners();
-      // updateUIBasedOnAuth();
     }
     if (path === "/settings") {
-      // container!.innerHTML = html; find a way to separe ts and html/css
+      settings!.innerHTML = html;
       if (!isLoggedIn()) {
         alert("You need to be logged to acces to settings");
         history.replaceState({}, "", "/");
@@ -40,9 +40,18 @@ export async function loadView(path: Route) {
         return;
       }
       setupSettingsForm();
+      updateUIBasedOnAuth();
+      const loginModalSet = document.getElementById("loginModalSettings");
+      if (loginModalSet) {
+        loginModalSet.addEventListener("click", (e) => {
+          if (e.target === loginModalSet) {
+              loginModalSet.remove();
+              history.replaceState({}, "", "/");
+          }
+        })
+      }
     }
     if (path === "/game") {
-      container!.innerHTML = html;
       if (!isLoggedIn()) {
         alert("You need to be logged to play");
         history.replaceState({}, "", "/");
@@ -50,13 +59,8 @@ export async function loadView(path: Route) {
         return;
       }
       pongCanva!.classList.remove("hidden");
-      // setupGame();
     }
-    if (path === "/") {
-      container!.innerHTML = html;
-      // updateUIBasedOnAuth();
-      //setupHome();
-    }
+    if (path === "/") container!.innerHTML = html;
   } catch (err) {
     container!.innerHTML = "<p>View not found</p>";
   }
@@ -82,7 +86,6 @@ function setupNavLinks() {
 window.addEventListener("popstate", () => {
   const path = window.location.pathname as Route;
   loadView(path);
-  // updateUIBasedOnAuth();
 });
 
 // 🔥 Initialisation

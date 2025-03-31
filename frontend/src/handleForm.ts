@@ -38,16 +38,19 @@ export function setupLoginListeners(): void{
 
         //simulation id
         const fakeUser = {
+            userName: "Salowie",
             email: "test@test.be",
             password: "#123Quatre",
+            avatar: `${BASE_PATH}/img/avatar.jpg`,
         };
+        sessionStorage.setItem("user1", JSON.stringify(fakeUser));
 
         if (email === fakeUser.email && password === fakeUser.password) {
             sessionStorage.setItem("isLoggedIn", "true");
             alert("Connected!");
             history.replaceState({}, "", "/");
             loadView("/");
-            renderUserWidget({name: "Salowie", avatar: `${BASE_PATH}/img/avatar.jpg`});
+            renderUserWidget({name: fakeUser.userName, avatar: fakeUser.avatar, email: fakeUser.email});
             updateUIBasedOnAuth();
         } else {
             if (email !== fakeUser.email)
